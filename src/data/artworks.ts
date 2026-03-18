@@ -85,8 +85,8 @@ export const artworks: Artwork[] = [
       "height": 645
     },
   {
-      "id": "image-28-1",
-      "filename": "Image #28(1).png",
+      "id": "descenr",
+      "filename": "descenr.png",
       "tags": [],
       "width": 1242,
       "height": 1227
