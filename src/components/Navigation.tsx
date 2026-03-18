@@ -24,12 +24,6 @@ export default function Navigation() {
       )}
     >
       <div className="mx-auto max-w-7xl flex items-center justify-between px-6 py-4">
-        <a
-          href="#"
-          className="font-heading text-lg font-bold tracking-wide text-foreground hover:text-accent transition-colors"
-        >
-          AHMET
-        </a>
         <div className="flex items-center gap-8">
           <a
             href="#gallery"
