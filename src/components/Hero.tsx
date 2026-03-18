@@ -2,13 +2,15 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { artworks } from "@/data/artworks";
 
 export default function Hero() {
+  const heroArtwork = artworks[0];
   return (
     <section className="relative flex min-h-screen items-center justify-center overflow-hidden">
       <div className="absolute inset-0">
         <Image
-          src="/artworks/dual-demons.png"
+          src={heroArtwork ? `/artworks/${heroArtwork.filename}` : "/artworks/pfp.png"}
           alt=""
           fill
           className="object-cover opacity-20 scale-110 blur-sm"
