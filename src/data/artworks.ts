@@ -15,13 +15,6 @@ export const artworks: Artwork[] = [
       "height": 1931
     },
   {
-      "id": "abimnemalla2342",
-      "filename": "abimnemalla2342.png",
-      "tags": [],
-      "width": 1086,
-      "height": 1442
-    },
-  {
       "id": "art-practice",
       "filename": "ART PRACTICE.png",
       "tags": [],
@@ -99,18 +92,11 @@ export const artworks: Artwork[] = [
       "height": 1227
     },
   {
-      "id": "letsgo-4",
-      "filename": "letsgo(4).png",
+      "id": "letsgo-74",
+      "filename": "letsgo(74).png",
       "tags": [],
-      "width": 1920,
-      "height": 1910
-    },
-  {
-      "id": "lol-2",
-      "filename": "Lol(2).png",
-      "tags": [],
-      "width": 378,
-      "height": 473
+      "width": 954,
+      "height": 1907
     },
   {
       "id": "lol2-2",
