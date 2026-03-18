@@ -116,18 +116,13 @@ export default function Lightbox({
           >
             <Image
               src={`/artworks/${artwork.filename}`}
-              alt={artwork.filename}
+              alt="Artwork"
               width={artwork.width}
               height={artwork.height}
               className="max-h-[85vh] w-auto object-contain rounded-lg"
               sizes="90vw"
               priority
             />
-            <div className="absolute -bottom-12 left-0 right-0 text-center">
-              <p className="font-heading text-sm font-semibold text-white/80 tracking-wide">
-                {artwork.filename}
-              </p>
-            </div>
           </motion.div>
         </motion.div>
       )}
