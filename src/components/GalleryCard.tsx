@@ -23,16 +23,13 @@ export default function GalleryCard({ artwork, onClick }: GalleryCardProps) {
       <div className="relative overflow-hidden rounded-lg bg-surface">
         <Image
           src={`/artworks/${artwork.filename}`}
-          alt={artwork.filename}
+          alt="Artwork"
           width={artwork.width}
           height={artwork.height}
           className="w-full h-auto transition-transform duration-500 group-hover:scale-105"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-          <p className="font-heading text-sm font-semibold text-white tracking-wide">
-            {artwork.filename}
-          </p>
           <div className="flex gap-2 mt-1.5">
             {artwork.tags.map((tag) => (
               <span
