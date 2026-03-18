@@ -6,7 +6,7 @@ export type Artwork = {
   height: number;
 };
 
-export const artworks: Artwork[
+export const artworks: Artwork[] = [
   {
       "id": "in-the-depths-wacom-x-magma-come-draw-fishesss-1",
       "filename": "_In the Depths_ wacom x magma COME DRAW FISHESSS(1).png",
