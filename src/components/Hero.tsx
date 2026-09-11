@@ -1,34 +1,40 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
-import { artworks } from "@/data/artworks";
 
 export default function Hero() {
-  const heroArtwork = artworks[0];
   return (
     <section className="relative flex min-h-screen items-center justify-center overflow-hidden">
-      <div className="absolute inset-0">
-        <Image
-          src={heroArtwork ? `/artworks/${heroArtwork.filename}` : "/artworks/pfp.png"}
-          alt=""
-          fill
-          className="object-cover opacity-20 scale-110 blur-sm"
-          priority
-          sizes="100vw"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
-      </div>
+      {/* soft dark halo keeps the headline readable over the nebula */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(5,5,12,0.62)_0%,rgba(5,5,12,0)_62%)]" />
 
       <div className="relative z-10 text-center px-6">
+        <motion.p
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          className="mb-5 font-heading text-[11px] sm:text-xs tracking-[0.5em] uppercase text-muted"
+        >
+          Illustrator&ensp;·&ensp;Developer
+        </motion.p>
+
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="font-display text-6xl sm:text-8xl md:text-9xl tracking-tight text-foreground leading-none"
+          transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+          className="title-glow font-display text-7xl sm:text-8xl md:text-9xl tracking-tight text-foreground leading-none"
         >
           Ahmet
         </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          className="mt-6 font-heading text-xs sm:text-sm tracking-[0.28em] uppercase text-muted/90"
+        >
+          Dark fantasy · Creature design · Manga
+        </motion.p>
       </div>
 
       <motion.a
@@ -36,7 +42,7 @@ export default function Hero() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1, delay: 1 }}
-        className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-muted hover:text-foreground transition-colors cursor-pointer"
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-muted hover:text-foreground transition-colors cursor-pointer z-10"
       >
         <span className="text-[10px] tracking-[0.4em] uppercase font-heading">
           Scroll

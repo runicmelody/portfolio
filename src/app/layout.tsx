@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Dela_Gothic_One, Syne, DM_Sans } from "next/font/google";
 import "./globals.css";
+import DungeonBackground from "@/components/dungeon/DungeonBackground";
 
 const delaGothic = Dela_Gothic_One({
   weight: "400",
@@ -44,6 +45,7 @@ export default function RootLayout({
       <body
         className={`${delaGothic.variable} ${syne.variable} ${dmSans.variable} antialiased`}
       >
+        <DungeonBackground />
         {children}
       </body>
     </html>

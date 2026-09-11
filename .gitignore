@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# stray 0-byte file created by a shell redirect (kept on disk, not tracked)
+$null

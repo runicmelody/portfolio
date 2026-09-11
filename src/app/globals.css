@@ -29,10 +29,35 @@ html {
 }
 
 body {
-  background: var(--background);
+  /* static dungeon gradient — also the no-WebGPU fallback */
+  background:
+    radial-gradient(
+      900px 640px at 50% 118%,
+      rgba(150, 42, 10, 0.30),
+      transparent 62%
+    ),
+    radial-gradient(
+      1000px 700px at 50% -16%,
+      rgba(26, 14, 46, 0.35),
+      transparent 60%
+    ),
+    radial-gradient(
+      700px 500px at 12% 8%,
+      rgba(9, 66, 74, 0.16),
+      transparent 55%
+    ),
+    var(--background);
   color: var(--foreground);
   font-family: var(--font-body), system-ui, sans-serif;
   overflow-x: hidden;
+}
+
+.title-glow {
+  text-shadow:
+    0 0 18px rgba(0, 0, 0, 0.92),
+    0 0 70px rgba(220, 38, 38, 0.28),
+    0 0 130px rgba(34, 211, 238, 0.16),
+    0 0 200px rgba(220, 38, 38, 0.12);
 }
 
 body::before {
