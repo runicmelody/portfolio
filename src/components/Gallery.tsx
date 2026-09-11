@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { AnimatePresence } from "framer-motion";
 import { artworks, getAllTags } from "@/data/artworks";
 import type { Artwork } from "@/data/artworks";
 import TagFilter from "./TagFilter";
@@ -66,7 +65,6 @@ export default function Gallery() {
       </div>
 
       <div className="columns-1 sm:columns-2 lg:columns-3 gap-4">
-        <AnimatePresence mode="popLayout">
           {filtered.map((artwork) => (
             <GalleryCard
               key={artwork.id}
@@ -74,7 +72,6 @@ export default function Gallery() {
               onClick={() => openLightbox(artwork)}
             />
           ))}
-        </AnimatePresence>
       </div>
 
       <Lightbox

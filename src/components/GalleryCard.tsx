@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import Image from "next/image";
 import type { Artwork } from "@/data/artworks";
 
@@ -11,12 +10,7 @@ interface GalleryCardProps {
 
 export default function GalleryCard({ artwork, onClick }: GalleryCardProps) {
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+    <div
       className="break-inside-avoid mb-4 group cursor-pointer"
       onClick={onClick}
     >
@@ -42,6 +36,6 @@ export default function GalleryCard({ artwork, onClick }: GalleryCardProps) {
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
