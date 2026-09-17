@@ -9,35 +9,61 @@
  *             (Creative Commons ve Google Görseller bu alanları okur)
  *   • eXIf  → Artist / Copyright / ImageDescription
  *             (Windows "Özellikler → Ayrıntılar", macOS Önizleme)
- *   • tEXt  → Copyright / Author / Description  (basit okuyucular)
+ *   • tEXt  → Title / Author / Copyright / Description  (basit okuyucular)
  *
  * Neden önemli: metadata dosyanın İÇİNE yazılır. Görsel indirilip başka bir
  * sitede kullanılsa bile "kimin, hangi lisansla" olduğu dosyayla birlikte
  * taşınır. Görünmez ama silinmesi için kasten uğraşılması gerekir.
  *
  * Kullanım:
- *   node scripts/stamp-copyright.mjs            # public/artworks içine yazar
- *   node scripts/stamp-copyright.mjs --check    # sadece rapor verir, yazmaz
+ *   node scripts/stamp-copyright.mjs               # yalnızca damgasız dosyaları işler
+ *   node scripts/stamp-copyright.mjs --check       # rapor verir, yazmaz
+ *   node scripts/stamp-copyright.mjs --force       # hepsini yeniden damgalar
  *   node scripts/stamp-copyright.mjs --dir public/artworks
  *
- * Idempotent: ikinci çalıştırmada zaten damgalı dosyaları atlar.
+ * Alan adı: NEXT_PUBLIC_SITE_URL > VERCEL_PROJECT_PRODUCTION_URL > VERCEL_URL
+ * > copyright.config.json > (boşsa doğrudan Creative Commons lisans adresi).
+ * Böylece gömülen adres asla yanlış bir alan adına sabitlenmez.
  */
 
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
-import { extname, join, relative } from 'node:path';
+import { dirname, extname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { dirname, resolve } from 'node:path';
 
 const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
-// ---------------------------------------------------------------------------
-// Yapılandırma — site verileriyle aynı kalmalı (src/data/site.ts)
-// ---------------------------------------------------------------------------
-const config = JSON.parse(readFileSync(join(rootDir, 'scripts', 'copyright.config.json'), 'utf8'));
-const { author, siteUrl, licenceName, licenceUrl, licencePage, email } = config;
+const config = JSON.parse(
+  readFileSync(join(rootDir, 'scripts', 'copyright.config.json'), 'utf8')
+);
 
 const YEAR = new Date().getFullYear();
-const COPYRIGHT = `© ${YEAR} ${author}. Licensed ${licenceName} — ${licenceUrl}. No AI training. ${licencePage}`;
+
+function resolveSiteUrl() {
+  const candidates = [
+    process.env.NEXT_PUBLIC_SITE_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    process.env.VERCEL_URL,
+    config.siteUrl,
+  ];
+
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    const withScheme = candidate.startsWith('http')
+      ? candidate
+      : `https://${candidate}`;
+    return withScheme.replace(/\/+$/, '');
+  }
+
+  return '';
+}
+
+const { author, email, licenceName, licenceUrl } = config;
+const siteUrl = resolveSiteUrl();
+const licencePage = siteUrl
+  ? `${siteUrl}${config.licencePath ?? '/lisans'}`
+  : licenceUrl;
+
+const COPYRIGHT = `\u00a9 ${YEAR} ${author}. Licensed ${licenceName} \u2014 ${licenceUrl}. No AI training. ${licencePage}`;
 const XMP_MARKER = 'ahmet-portfolio/copyright';
 
 // ---------------------------------------------------------------------------
@@ -81,7 +107,12 @@ function parseChunks(png) {
     const dataStart = offset + 8;
     const dataEnd = dataStart + length;
     if (dataEnd + 4 > png.length) break;
-    chunks.push({ type, start: offset, end: dataEnd + 4, data: png.subarray(dataStart, dataEnd) });
+    chunks.push({
+      type,
+      start: offset,
+      end: dataEnd + 4,
+      data: png.subarray(dataStart, dataEnd),
+    });
     offset = dataEnd + 4;
     if (type === 'IEND') break;
   }
@@ -92,30 +123,34 @@ function parseChunks(png) {
 // Metadata üreticileri
 // ---------------------------------------------------------------------------
 function textChunk(keyword, value) {
-  return makeChunk('tEXt', Buffer.concat([
-    Buffer.from(keyword, 'latin1'),
-    Buffer.from([0]),
-    Buffer.from(value, 'latin1'),
-  ]));
+  return makeChunk(
+    'tEXt',
+    Buffer.concat([
+      Buffer.from(keyword, 'latin1'),
+      Buffer.from([0]),
+      Buffer.from(value, 'latin1'),
+    ])
+  );
 }
 
 function xmpChunk(xmp) {
-  return makeChunk('iTXt', Buffer.concat([
-    Buffer.from('XML:com.adobe.xmp', 'latin1'),
-    Buffer.from([0]), // keyword sonu
-    Buffer.from([0]), // sıkıştırma bayrağı: sıkıştırılmamış
-    Buffer.from([0]), // sıkıştırma yöntemi
-    Buffer.from('', 'latin1'), // dil etiketi
-    Buffer.from([0]),
-    Buffer.from('', 'utf8'), // çevrilmiş anahtar kelime
-    Buffer.from([0]),
-    Buffer.from(xmp, 'utf8'),
-  ]));
+  return makeChunk(
+    'iTXt',
+    Buffer.concat([
+      Buffer.from('XML:com.adobe.xmp', 'latin1'),
+      Buffer.from([0]), // keyword sonu
+      Buffer.from([0]), // sıkıştırma bayrağı: sıkıştırılmamış
+      Buffer.from([0]), // sıkıştırma yöntemi
+      Buffer.from('', 'latin1'), // dil etiketi
+      Buffer.from([0]),
+      Buffer.from('', 'utf8'), // çevrilmiş anahtar kelime
+      Buffer.from([0]),
+      Buffer.from(xmp, 'utf8'),
+    ])
+  );
 }
 
-/**
- * TIFF/EXIF bloğu üretir (PNG eXIf chunk'ı "Exif\0\0" başlığı İÇERMEZ).
- */
+/** TIFF/EXIF bloğu (PNG eXIf chunk'ı "Exif\0\0" başlığı İÇERMEZ). */
 function exifChunk(fields) {
   const entries = fields.map(([tag, value]) => ({
     tag,
@@ -162,6 +197,10 @@ function xmlEscape(value) {
 }
 
 function buildXmp(title) {
+  const attributionUrl = siteUrl
+    ? `   <cc:attributionURL rdf:resource="${siteUrl}"/>\n`
+    : '';
+
   return `<?xpacket begin="\uFEFF" id="W5M0MpCehiHzreSzNTczkc9d"?>
 <x:xmpmeta xmlns:x="adobe:ns:meta/">
  <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
@@ -174,13 +213,12 @@ function buildXmp(title) {
    <dc:title><rdf:Alt><rdf:li xml:lang="x-default">${xmlEscape(title)}</rdf:li></rdf:Alt></dc:title>
    <cc:license rdf:resource="${licenceUrl}"/>
    <cc:attributionName>${xmlEscape(author)}</cc:attributionName>
-   <cc:attributionURL rdf:resource="${siteUrl}"/>
-   <cc:morePermissions rdf:resource="${licencePage}"/>
+${attributionUrl}   <cc:morePermissions rdf:resource="${licencePage}"/>
    <xmpRights:Marked>True</xmpRights:Marked>
    <xmpRights:WebStatement>${licencePage}</xmpRights:WebStatement>
    <xmpRights:UsageTerms><rdf:Alt><rdf:li xml:lang="x-default">${xmlEscape(COPYRIGHT)}</rdf:li></rdf:Alt></xmpRights:UsageTerms>
    <xmpRights:Owner><rdf:Bag><rdf:li>${xmlEscape(author)}</rdf:li></rdf:Bag></xmpRights:Owner>
-   <dc:description><rdf:Alt><rdf:li xml:lang="x-default">${XMP_MARKER} · ${xmlEscape(email)}</rdf:li></rdf:Alt></dc:description>
+   <dc:description><rdf:Alt><rdf:li xml:lang="x-default">${XMP_MARKER} \u00b7 ${xmlEscape(email)}</rdf:li></rdf:Alt></dc:description>
   </rdf:Description>
  </rdf:RDF>
 </x:xmpmeta>
@@ -203,16 +241,24 @@ function isStamped(png) {
   return png.includes(XMP_MARKER);
 }
 
+const MANAGED_TEXT_KEYWORDS = [
+  'Copyright',
+  'Author',
+  'Artist',
+  'Description',
+  'Software',
+  'Title',
+];
+
 function stampPng(buffer, title) {
   const chunks = parseChunks(buffer);
   if (chunks.length === 0) throw new Error('geçersiz PNG: chunk bulunamadı');
 
-  const stale = new Set(['eXIf']);
   const keep = chunks.filter((chunk) => {
-    if (stale.has(chunk.type)) return false;
+    if (chunk.type === 'eXIf') return false;
     if (chunk.type === 'tEXt') {
       const keyword = chunk.data.toString('latin1').split('\0')[0];
-      return !['Copyright', 'Author', 'Artist', 'Description', 'Software'].includes(keyword);
+      return !MANAGED_TEXT_KEYWORDS.includes(keyword);
     }
     if (chunk.type === 'iTXt') {
       const keyword = chunk.data.toString('latin1').split('\0')[0];
@@ -230,12 +276,12 @@ function stampPng(buffer, title) {
       [0x010e, title], // ImageDescription
       [0x0131, 'Ahmet illustration portfolio'], // Software
       [0x013b, author], // Artist
-      [0x8298, `© ${YEAR} ${author}`], // Copyright (EXIF)
+      [0x8298, `\u00a9 ${YEAR} ${author}`], // Copyright
     ]),
     textChunk('Title', title),
     textChunk('Author', author),
     textChunk('Copyright', COPYRIGHT),
-    textChunk('Description', `${title} — ${licenceName}`),
+    textChunk('Description', `${title} \u2014 ${licenceName}`),
     textChunk('Software', 'stamp-copyright.mjs'),
   ];
 
@@ -262,14 +308,17 @@ function walk(dir, out = []) {
 // ---------------------------------------------------------------------------
 const args = process.argv.slice(2);
 const checkOnly = args.includes('--check');
+const force = args.includes('--force');
 const dirArgIndex = args.indexOf('--dir');
 const targetDir = resolve(
   rootDir,
   dirArgIndex !== -1 ? args[dirArgIndex + 1] : join('public', 'artworks')
 );
 
+console.log(`lisans adresi: ${licencePage}`);
+
 if (!statSync(targetDir, { throwIfNoEntry: false })) {
-  console.error(`✗ Klasör bulunamadı: ${targetDir}`);
+  console.error(`\u2717 Klasör bulunamadı: ${targetDir}`);
   process.exit(1);
 }
 
@@ -290,7 +339,7 @@ for (const file of pngs) {
       failures.push(`${rel} (PNG imzası yok)`);
       continue;
     }
-    if (isStamped(original)) {
+    if (isStamped(original) && !force) {
       already += 1;
       continue;
     }
@@ -308,15 +357,18 @@ for (const file of pngs) {
 }
 
 const verb = checkOnly ? 'damgalanacak' : 'damgalandı';
-console.log(`${checkOnly ? '◻' : '✓'} ${stamped} PNG ${verb}, ${already} zaten damgalı`);
-if (!checkOnly && bytesAdded > 0) {
-  console.log(`  eklenen metadata: ${(bytesAdded / 1024).toFixed(1)} KB`);
+console.log(
+  `${checkOnly ? '\u25fb' : '\u2713'} ${stamped} PNG ${verb}, ${already} zaten damgalı`
+);
+if (!checkOnly && bytesAdded !== 0) {
+  console.log(`  metadata boyut değişimi: ${(bytesAdded / 1024).toFixed(1)} KB`);
 }
 if (skipped.length) {
-  console.log(`• ${skipped.length} PNG olmayan dosya atlandı (${[...new Set(skipped.map((f) => extname(f)))].join(', ')})`);
+  const exts = [...new Set(skipped.map((f) => extname(f)))].join(', ');
+  console.log(`\u2022 ${skipped.length} PNG olmayan dosya atlandı (${exts})`);
 }
 if (failures.length) {
-  console.log(`✗ ${failures.length} dosya işlenemedi:`);
+  console.log(`\u2717 ${failures.length} dosya işlenemedi:`);
   failures.forEach((f) => console.log(`    ${f}`));
   process.exitCode = 1;
 }

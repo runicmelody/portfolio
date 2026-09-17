@@ -1,8 +1,9 @@
 {
+  "_comment": "siteUrl BOŞ bırakılırsa görsellere gömülen WebStatement alanı doğrudan Creative Commons lisans adresini gösterir. Gerçek alan adını buraya yazıp `npm run copyright:stamp -- --force` çalıştırırsan metadata siteye işaret eder.",
   "author": "Ahmet Faruk Özdemir",
   "email": "flatearth4423@gmail.com",
-  "siteUrl": "https://ahmet-portfolio.vercel.app",
+  "siteUrl": "",
   "licenceName": "CC BY-NC-ND 4.0",
   "licenceUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
-  "licencePage": "https://ahmet-portfolio.vercel.app/lisans"
+  "licencePath": "/lisans"
 }

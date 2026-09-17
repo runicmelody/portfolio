@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
-import { LICENSE_URL } from "./src/data/site";
+import { LICENSE_URL, SITE } from "./src/data/site";
+
+console.log(`[licensing] site url: ${SITE.url}`);
 
 const nextConfig: NextConfig = {
   images: {

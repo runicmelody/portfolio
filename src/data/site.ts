@@ -1,18 +1,45 @@
 /**
  * Site geneli + telif/lisans bilgileri (tek merkezden yönetilir).
  *
- * ÖNEMLİ: Siteyi kendi alan adına taşıdığında ya buradaki `url` değerini değiştir,
- * ya da Vercel'de NEXT_PUBLIC_SITE_URL ortam değişkenini tanımla.
+ * Alan adı burada SABİT DEĞİL: çalışma zamanında ortam değişkenlerinden çözülür.
+ * Vercel'de `VERCEL_PROJECT_PRODUCTION_URL` otomatik geldiği için site kendi
+ * adresini kendi bulur. Özel alan adı kullanıyorsan Vercel'de
+ * NEXT_PUBLIC_SITE_URL tanımlaman yeterli.
  *
  * Bu değer; canonical link, Open Graph, JSON-LD ve lisans bağlantılarında kullanılır.
  */
+
+/**
+ * Alan adını çalışma zamanında çözer — kod hiçbir zaman yanlış bir alan adına
+ * sabitlenmez. Öncelik sırası:
+ *   1) NEXT_PUBLIC_SITE_URL          → Vercel: Settings → Environment Variables
+ *   2) VERCEL_PROJECT_PRODUCTION_URL → Vercel build sırasında otomatik verir
+ *   3) VERCEL_URL                    → preview deployment'ın kendi adresi
+ *   4) yerel geliştirme
+ */
+function resolveSiteUrl(): string {
+  const candidates = [
+    process.env.NEXT_PUBLIC_SITE_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    process.env.VERCEL_URL,
+  ];
+
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    const withScheme = candidate.startsWith("http")
+      ? candidate
+      : `https://${candidate}`;
+    return withScheme.replace(/\/+$/, "");
+  }
+
+  return "http://localhost:3000";
+}
+
 export const SITE = {
   name: "Ahmet",
   author: "Ahmet Faruk Özdemir",
   email: "flatearth4423@gmail.com",
-  url: (
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://ahmet-portfolio.vercel.app"
-  ).replace(/\/+$/, ""),
+  url: resolveSiteUrl(),
   licensePath: "/lisans",
   instagram: "https://www.instagram.com/runicmelody/",
 } as const;
