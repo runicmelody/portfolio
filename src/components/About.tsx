@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 export default function About() {
   return (
@@ -68,7 +69,10 @@ export default function About() {
 
         <p className="mt-8 text-xs text-muted/50 tracking-wider">
           &copy; {new Date().getFullYear()} Ahmet. All artworks are original
-          creations.
+          creations, licensed CC BY-NC-ND 4.0.{" "}
+          <Link href="/lisans" className="underline hover:text-muted">
+            Licensing &amp; usage terms
+          </Link>
         </p>
       </motion.div>
     </section>
